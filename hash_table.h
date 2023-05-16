@@ -1,9 +1,11 @@
 #ifndef _hash_tb
 #define hash_tb
 
+using u32 = unsigned;
 template<int N>
 struct hash_map{
-    int a[N], nxt[N], val[N], hed[N];
+    u32 a[N];
+    int nxt[N], val[N], hed[N];
     int st[N], tp;
     hash_map(){
         memset(a, -1, sizeof(a));
@@ -24,7 +26,7 @@ struct hash_map{
             return *this;
         }
 
-        int fi() const{return val[pos];}
+        u32 fi() const{return val[pos];}
         int& se() const{return a[pos];}
 
         inline bool operator ==(const iterator &b){return pos == b.pos && cur == b.cur;}
@@ -33,14 +35,14 @@ struct hash_map{
 
     iterator end() const{return iterator(-1, this);}
 
-    int find(int x){
+    int find(u32 x){
         int y = x % N;
         for(int i = hed[y]; ~i; i = nxt[i])
             if(val[i] == x) return iterator(i, this);
         return end();
     }
 
-    void insert(int x, int t){
+    void insert(u32 x, int t){
         int y = x % N;
         for(int i = hed[y]; ~i; i = nxt[i])
             if(val[i] == x) return;
@@ -49,7 +51,7 @@ struct hash_map{
         hed[y] = cur; a[cur] = t;
     }
 
-    int &operator [](int x){
+    int &operator [](u32 x){
         int y = x % N;
         for(int i = hed[y]; ~i; i = nxt[i])
             if(val[i] == x) return a[i];
@@ -59,7 +61,7 @@ struct hash_map{
         return a[cur];
     }
 
-    void erase(int x){
+    void erase(u32 x){
         int y = x % N;
         for(int i = hed[y], pre = -1; ~i; i = nxt[pre = i])
             if(val[i] == x){

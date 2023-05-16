@@ -9,7 +9,7 @@ struct user_info{
     str<20> name;
     str<30> mail;
     int pr;
-    user_info():pr(-1),log(0){}
+    user_info():pr(-1)){}
 };
 
 const int B = 100;
@@ -33,31 +33,28 @@ public:
     }
 
     void login(user_name u,str<30> pw){
+        int id = u.hash();
+        if(log.find(id) != log.end()) throw "user loggin";
         auto cur = us.find(u);
-        if(log.find(cur) != log.end())
-        if(cur == us.end()) throw "login error";
+        if(cur == us.end()) throw "no such user";
         user_info v = cur.dat();
-        if(v.log || v.pw != pw) throw "login error";
-        v.log = 1;
+        if(v.pw != pw) throw "wrong password";
+        log.insert(id, v.pr);
     }
     
     void logout(user_name u){
-        auto cur = us.find(u);
-        if(cur == us.end()) return 0;
-        user_info v = cur.dat();
-        if(!v.log) return 0;
-        v.log = 0; cur.mod(v);
+        int id = u.hash();
+        if(log.find(id) == log.end()) throw "user loggout";
+        log.erase(id);
     }
 
-    bpt<user_name, user_info, B>::iterator query_profile(user_name c, user_name u){
-        auto cur = us.find(c);
-        if(cur == us.end()) return us.end();
-        user_info v = cur.dat();
-        if(!v.log) return us.end();
-        auto now = us.find(c);
-        if(now == us.end()) return us.end();
+    bpt<user_name, user_info, B>::iterator get_profile(user_name c, user_name u){
+        auto cur = log.find(c.hash());
+        if(cur == us.end()) throw "user not loggin";
+        auto now = us.find(u);
+        if(now == us.end()) throw "no such user";
         user_info p = now.dat();
-        if(p.pr > v.pr) return us.end();
+        if(p.pr > cur.se()) throw "invalid priorty";
         return now;
     }
 };

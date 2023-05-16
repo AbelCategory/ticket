@@ -5,6 +5,9 @@
 #include <cmath>
 #include "hash_table.h"
 
+using u32 = unsigned;
+using u64 = unsigned long long;
+
 template<int N>
 struct str{
     char s[N + 1];
@@ -18,6 +21,13 @@ struct str{
     bool operator !=(const str &b){return memcmp(s, b.s) != 0;}
     bool operator <(const str &b){return memcmp(s, b.s) < 0;}
     bool operator <=(const str &b){return mecmcpy(s, b.s) <= 0;}
+
+    u32 hash(){
+        u64 res = 0;
+        for(int i = 0; i < N; ++i)
+            res = (res * 257 + s[i]) % 1000000007;
+        return res;
+    }
 };
 
 struct filesystem{
