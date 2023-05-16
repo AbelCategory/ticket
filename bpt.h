@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cmath>
+#include "hash_table.h"
 
 template<int N>
 struct str{
@@ -55,46 +56,6 @@ struct filesystem{
 };
 int filesystem::cnt1 = 0, filesystem::cnt2=0;
 
-const int N = 10007;
-struct hash_map{
-    int a[N], nxt[N], val[N], hed[N];
-    int st[N], tp;
-    hash_map(){
-        memset(a, -1, sizeof(a));
-        memset(nxt, -1 ,sizeof(nxt));
-        memset(hed, -1, sizeof(hed));
-        for(int i = 0; i < N; ++ i)
-            st[i] = i;
-        tp = 0;
-    }
-
-    int &operator [](int x){
-        int y = x % N;
-        for(int i = hed[y]; ~i; i = nxt[i])
-            if(val[i] == x) return a[i];
-        int cur = st[tp++];
-        nxt[cur] = hed[y]; val[cur] = x;
-        hed[y] = cur; a[cur] = -1;
-        return a[cur];
-    }
-
-    void erase(int x){
-        int y = x % N;
-        for(int i = hed[y], pre = -1; ~i; i = nxt[pre = i])
-            if(val[i] == x){
-                if(pre == -1){
-                    hed[y] = nxt[i];
-                    st[--tp] = i;
-                }
-                else{
-                    nxt[pre] = nxt[i];
-                    st[--tp] = i;
-                }
-            }
-    }
-};
-
-bool ok = 0;
 const int _M = 500;
 template<class T, class _val, int _N>
 class bpt{
@@ -125,7 +86,7 @@ private:
     filesystem A;
     struct cache{
         Node ca[_M]; int nxt[_M], pre[_M], hed, id[_M], ti;
-        hash_map C; int sz; bool vis[_M];
+        hash_map C<10007>; int sz; bool vis[_M];
         filesystem B;
         cache(const char *s):B(s){
             sz = hed = 0; ti = -1;
@@ -218,6 +179,8 @@ public:
         A.write<int>(0, &rt); A.write<int>(4, &cnt);
     }
 
+    inline bool empty(){return bpt.rt == 0;}
+
     struct iterator{
     private:
         int cur, id;
@@ -239,9 +202,7 @@ public:
 
         bool operator ==(iterator b){return cur == b.cur && id == b.id && now == b.now;}
         bool operator !=(iterator b){return cur != b.cur || id != b.id || now != b.now;}
-        T* operator ->() const noexcept{
-            return now->C.get_id(cur).a + id;
-        }
+
         _val dat(){
             int pos = now->C.get_id(cur).ch[id + 1];
             _val res; D.read(pos * sizeof(_val), &res);

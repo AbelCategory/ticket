@@ -14,6 +14,6 @@ struct sta{
 struct train_info{
     int sta_num;
     station st[100];
-
+    
 };
 #endif

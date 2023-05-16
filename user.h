@@ -9,7 +9,6 @@ struct user_info{
     str<20> name;
     str<30> mail;
     int pr;
-    bool log;
     user_info():pr(-1),log(0){}
 };
 
@@ -17,33 +16,37 @@ const int B = 100;
 class user_system{
 private:
     bpt<user_name,user_info,B> us;
+    hash_map<25117> log;
 public:
     user_system():us("user_init","user_ind","user_data"){}
-    bool add_user(user_name c, user_name p, user_info w){
-        auto cur = us.find(c);
-        if(cur == us.end()) return 0;
-        user_info v = cur.dat();
-        if(!v.log || v.pr <= w.pr) return 0;
-        if(us.find(p) != us.end()) return 0;
+    void add_user(user_name c, user_name p, user_info w){
+        auto cur = log.find(c.hash());
+        if(us.empty()){
+            p.pr = 10;
+        }
+        else{
+            if(cur == log.end()) throw "no such user";
+            if(log.se() <= w.pr) throw "invalid priority";
+            if(us.find(p) != us.end()) throw "user exist";
+        }
         us.insert(p, w);
-        return 1;
     }
 
-    bool login(user_name u,str<30> pw){
+    void login(user_name u,str<30> pw){
         auto cur = us.find(u);
-        if(cur == us.end()) return 0;
+        if(log.find(cur) != log.end())
+        if(cur == us.end()) throw "login error";
         user_info v = cur.dat();
-        if(v.log || v.pw != pw) return 0;
+        if(v.log || v.pw != pw) throw "login error";
         v.log = 1;
-        cur.mod(v); return 1;
     }
     
-    bool logout(user_name u){
+    void logout(user_name u){
         auto cur = us.find(u);
         if(cur == us.end()) return 0;
         user_info v = cur.dat();
         if(!v.log) return 0;
-        v.log = 0; cur.mod(v); return 1;
+        v.log = 0; cur.mod(v);
     }
 
     bpt<user_name, user_info, B>::iterator query_profile(user_name c, user_name u){
