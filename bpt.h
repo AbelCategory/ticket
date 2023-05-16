@@ -275,11 +275,22 @@ public:
                 if(i) --i;
                 if(val.a[i] != x) return end();
                 else return iterator(cur, i, this);
-                //if(memcmp(it -> fi, x.fi, 64) != 0) ++it;
-                //if(x.se == 0) fprintf(stderr, "_cnt=%d\n",_cnt);
-                //if(it == end()) return end();
-                //if(i < 0 || memcmp(it -> fi, x.fi, 64) != 0) return end();
-                //else return it;
+            }
+        }
+    }
+
+    iterator lower_bound(const T& x){
+        int cur = rt;
+        if(rt == 0) return end();
+        while(1){
+            Node val = C.get_id(cur);
+            int i = upper_bound(val, x);
+            if(!val.is_leaf) cur = val.ch[i];
+            else{
+                if(i) --i;
+                iterator res(cur, i ,this);
+                if(val.a[i] < x) ++res;
+                return res;
             }
         }
     }
@@ -485,5 +496,4 @@ public:
         }
     }
 };
-const int B = 150;
 #endif

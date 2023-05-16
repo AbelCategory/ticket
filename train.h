@@ -3,6 +3,7 @@
 
 #include "bpt.h"
 #include "user.h"
+#include "utility.hpp"
 
 using train_id = str<20>;
 using station = str<20>;
@@ -43,27 +44,52 @@ struct Tim{
     }
 };
 
-struct sta{
-    station name;
-    
-};
-
 const int _N_ = 100;
 struct train_info{
     int sta_num, seat_num;
     station st[_N_];
     int prc[_N_], tr_time[_N_], stop_time[_N_];
-    Tim st_tim, ;
+    Tim st_tim;
     char typ;
     train_info(){sta_num = 0;}
-
 };
+
+struct seat_info{
+    int seat[_N_], sta_num, tot_seat;
+    seat(int st = 0, int tot = 0):sta_num(st), tot(tot_seat){memset(seat, 0, sizeof(seat));}
+
+    void add(int l, int r, int x){
+        for(int i = l; i <= r; ++i)
+            seat[i] += x;
+    }
+    int qmin(int l,int r){
+        int res = 0
+        for(int i = l; i <= r; ++i)
+            res = max(res, seat[i]);
+        return tot_seat - res;
+    }
+};
+
+using train_ti = sjtu::pair<train_id, int>;
+using train_sta = sjtu::pair<train_id, station>;
 
 const int B = 100;
 struct train_system{
     bpt<train_id, train_info, B> tr;
+    bpt<traid_ti, seat_info, B> tic;
     void add_train(train_id i, const train_info &t){
-        
+        if(tr.find(i) != tr.end()) throw "train exist";
+        tr.insert(i, t);
     }
+
+    void delete_train(train_id i){
+        if(tr.find(i) == tr.end()) throw "train not exist";
+        tr.erase(i);
+    }
+
+    void release_train(train_id i){
+
+    }
+
 };
 #endif

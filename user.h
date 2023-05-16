@@ -10,6 +10,7 @@ struct user_info{
     str<30> mail;
     int pr;
     user_info():pr(-1)){}
+    user_i
 };
 
 const int B = 100;
@@ -19,7 +20,7 @@ private:
     hash_map<25117> log;
 public:
     user_system():us("user_init","user_ind","user_data"){}
-    void add_user(user_name c, user_name p, user_info w){
+    void add_user(const user_name& c, const user_name& p, const user_info& w){
         auto cur = log.find(c.hash());
         if(us.empty()){
             p.pr = 10;
@@ -32,7 +33,7 @@ public:
         us.insert(p, w);
     }
 
-    void login(user_name u,str<30> pw){
+    void login(const user_name& u, const str<30>& pw){
         int id = u.hash();
         if(log.find(id) != log.end()) throw "user loggin";
         auto cur = us.find(u);
@@ -42,13 +43,13 @@ public:
         log.insert(id, v.pr);
     }
     
-    void logout(user_name u){
+    void logout(const user_name& u){
         int id = u.hash();
         if(log.find(id) == log.end()) throw "user loggout";
         log.erase(id);
     }
 
-    bpt<user_name, user_info, B>::iterator get_profile(user_name c, user_name u){
+    bpt<user_name, user_info, B>::iterator get_profile(const user_name& c, const user_name& u){
         auto cur = log.find(c.hash());
         if(cur == us.end()) throw "user not loggin";
         auto now = us.find(u);
