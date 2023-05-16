@@ -1,5 +1,6 @@
 #ifndef _bpt
 #define _bpt
+
 #include <cstdio>
 #include <cstring>
 #include <cmath>

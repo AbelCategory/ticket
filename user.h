@@ -1,5 +1,6 @@
 #ifndef _user
 #define _user
+
 #include "bpt.h"
 #include "exceptions.hpp"
 
@@ -10,7 +11,6 @@ struct user_info{
     str<30> mail;
     int pr;
     user_info():pr(-1)){}
-    user_i
 };
 
 const int B = 100;
