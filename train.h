@@ -23,7 +23,7 @@ struct Day{
         day = x - mon[month];
     }
     Day(const Day &b):month(b.month), day(b.day){}
-    void out(){printf("%d-%d", month, day);}
+    void out(){cout << month << "-" << day;}
     inline int get_id(){return pre_mon[month - 1] + day;}
 
     inline bool operator <(const Day& b) const{return month < b.month || month == b.month && day < b.day;}
@@ -54,7 +54,7 @@ struct Tim{
         minute = (s[3] - 48) * 10 + s[4] - 48;
     }
     Tim(int ti):hour(ti / 60), minute(ti % 60){}
-    void out(){printf("%d:%d", hour, minute);}
+    void out(){cout <<  hour << ":" << minute;}
 
     inline int get_id(){return hour * 60 + minute;}
 
@@ -95,7 +95,8 @@ const int _N_ = 100;
 struct train_info{
     int sta_num, seat_num;
     station st[_N_];
-    int prc[_N_], tr_time[_N_], stop_time[_N_];
+    int cost[_N_], tr_time[_N_], stop_time[_N_];
+    int arr_time[_N_], lea_time[_N_];
     int sal1, sal2; Tim st_tim;
     char typ; bool is_re;
     train_info(){sta_num = 0;}
@@ -106,12 +107,12 @@ struct seat_info{
     seat(int st = 0, int tot = 0):sta_num(st), tot(tot_seat){memset(seat, 0, sizeof(seat));}
 
     void add(int l, int r, int x){
-        for(int i = l; i <= r; ++i)
+        for(int i = l; i < r; ++i)
             seat[i] += x;
     }
     int qmin(int l,int r){
         int res = 0
-        for(int i = l; i <= r; ++i)
+        for(int i = l; i < r; ++i)
             res = max(res, seat[i]);
         return tot_seat - res;
     }
@@ -127,7 +128,7 @@ struct train_system{
     bpt<traid_ti, seat_info, B> tic;
     bpt<train_sta, sta_info, 100> sta;
     train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_init"){}
-    void add_train(train_id i, const train_info &t){
+    void add_train(const train_id& i, const train_info &t){
         if(tr.find(i) != tr.end()) throw "train exist";
         tr.insert(i, t);
     }
@@ -144,7 +145,7 @@ struct train_system{
         if(cur.is_re) throw "train has been released";
         cur.is_re = 1; it.mod(cur);
         for(int d = cur.sal1; d <= cur.sal2; ++d)
-            tic.insert(train_ti(i, d), seat(i.sta_num, seat_num));
+            tic.insert(train_ti(i, d), seat_info(cur.sta_num, cur.seat_num));
         for(int j = 0; j < sta_num; ++j)
             sta.insert(train_sta(st[j], i), sta_info(j, it.pos()));
     }
@@ -153,16 +154,27 @@ struct train_system{
         auto it = tr.find(i);
         if(it == tr.end()) throw "train not exist";
         train_info cur = it.dat();
+        if(d.get_id() < sal1 || d.get_id() > sal2) throw "train not exist";
+        cout << i.s << " " << cur.typ << '\n';
         printf("%s %c\n", i, cur.typ);
-        if(d > cur.sal2 || d < cur.sal1) throw "train not exist";
         DaTi res(d, cur.st_tim);
+        seat_info sat;
+        if(i.is_re){
+            auto j = tic.find(train_ti(i, d));
+            sat = seat_info(cur.sta_num, cur.seat_num);
+        }
+        else sat = seat_info(i.sta_num, seat_num);
         for(int i = 0; i < cur.sta_num; ++i){
-            printf("%s ", cur.st[i]);
-            if(i == 0) printf("xx-xx xx:xx -> ");
-            else res.out(), printf(" -> ");
-            if(i) ti += cur.tr[i - 1];
-            if(i + 1 != cur.sta_num) res.out, puts("");
-            else printf("xx-xx xx:xx\n");
+            std::cout << cur.st[i] << ' ';
+            //printf("%s ", cur.st[i]);
+            if(i == 0) cout << "xx-xx xx:xx -> ";
+            else res.out(), cout << " -> ";
+            if(i) res += cur.lea_time[i] - cur.arr_time[i];
+            if(i + 1 != cur.sta_num) res.out();
+            else cout << "xx-xx xx:xx";
+            if(i + 1 != cur.sta_num) cout << ' ' << cur.cost[i] << ' ' << cur.seat_num - sat.seat[i] << '\n';
+            else cout << " " << cur.cost[i] << " x\n";
+            if(i + 1 != cur.sta_num) res += cur.arr_time[i + 1] - cur.lea_time[i];
         }
     }
 
