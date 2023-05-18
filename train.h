@@ -22,8 +22,27 @@ struct Day{
         month = lower_bound(pre_mon, pre_mon + 12, x) - pre_mon;
         day = x - mon[month];
     }
-    inline bool operator <(Day a, Day b){return a.month < b.month || a.month == b.month && a.day < b.day;}
+    Day(const Day &b):month(b.month), day(b.day){}
+    void out(){printf("%d-%d", month, day);}
     inline int get_id(){return pre_mon[month - 1] + day;}
+
+    inline bool operator <(const Day& b) const{return month < b.month || month == b.month && day < b.day;}
+    inline bool operator <=(const Day& b) const{return month < b.month || month == b.month && day <= b.day;}
+    inline bool operator ==(const Day &b) const{return month == b.month && day == b.day;}   
+    inline bool operator !=(const Day &b) const{return month != b.month || day != b.day;}
+
+    inline Day operator +(int b) const{
+        Day res(*this);
+        res.day += b;
+        while(res.day > mon[res.month]) res.day -= mon[res.month], ++res.month;
+        return res;
+    }
+
+    inline Day operator +=(int b){
+        day += b;
+        while(day > mon[month]) day -= mon[month], ++res;
+        return *this;
+    }
 };
 
 struct Tim{
@@ -35,17 +54,42 @@ struct Tim{
         minute = (s[3] - 48) * 10 + s[4] - 48;
     }
     Tim(int ti):hour(ti / 60), minute(ti % 60){}
+    void out(){printf("%d:%d", hour, minute);}
 
-    inline bool operator <(Tim a, Tim b){return a.hour < b.hour || a.}
     inline int get_id(){return hour * 60 + minute;}
 
-    Tim operator +(int ti) const{return Tim(get_id() + ti);}
-    Tim operator -(const Tim &b) const{return get_id() - b.get_id();}
-    Tim operator +=(int ti){
+    inline bool operator <(const Tim& b) const{return hour < b.hour || hour == b.hour && minute < b.minute;}
+    inline bool operator <=(const Tim& b) const{return hour < b.hour || hour == b.hour && minute <= b.minute;}
+    inline bool operator ==(const Tim& b) const{return hour == b.hour && minute == b.minute;}
+    inline bool operator !=(const Tim &b) const{return hour != b.hour || minute != b.minute;}
+
+    inline Tim operator +(int ti) const{return Tim(get_id() + ti);}
+    inline Tim operator -(const Tim &b) const{return get_id() - b.get_id();}
+    inline Tim operator +=(int ti){
         *this = (*this) + ti;
         return *this;
     }
 };
+
+struct DaTi{
+    Day d; Tim t;
+    DaTi(){}
+    DaTi(Day _d, Tim _t):d(_d), t(_t){}
+    DaTi(const DaTi& b):d(b.d), t(b.t){}
+    void out(){d.out(); putchar(' '); t.out();}
+
+    inline bool operator <(const DaTi& b) const{return d < b.d || d == b.d && t < b.t;}
+    inline bool operator <=(const DaTi& b) const{return d < b.d || d == b.d && t <= b.t;}
+    inline bool operator ==(const DaTi& b) const{return d == b.d && t == b.t;}
+    inline bool operator !=(const DaTi &b) const{return d != b.d || t != b.t;}
+    
+    inline DaTi operator +=(int b){
+        t += b;
+        d += t.hour / 24;
+        t.hour %= 24;
+        return 
+    }
+}
 
 const int _N_ = 100;
 struct train_info{
@@ -74,12 +118,15 @@ struct seat_info{
 };
 
 using train_ti = sjtu::pair<train_id, int>;
-using train_sta = sjtu::pair<train_id, station>;
+using train_sta = sjtu::pair<station, train_id>;
+using sta_info = sjtu::pair<int, int>;
 
 const int B = 100;
 struct train_system{
     bpt<train_id, train_info, B> tr;
     bpt<traid_ti, seat_info, B> tic;
+    bpt<train_sta, sta_info, 100> sta;
+    train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_init"){}
     void add_train(train_id i, const train_info &t){
         if(tr.find(i) != tr.end()) throw "train exist";
         tr.insert(i, t);
@@ -97,7 +144,9 @@ struct train_system{
         if(cur.is_re) throw "train has been released";
         cur.is_re = 1; it.mod(cur);
         for(int d = cur.sal1; d <= cur.sal2; ++d)
-            tic.insert(sjtu::make_pair(i, d), seat(i.sta_num, seat_num));
+            tic.insert(train_ti(i, d), seat(i.sta_num, seat_num));
+        for(int j = 0; j < sta_num; ++j)
+            sta.insert(train_sta(st[j], i), sta_info(j, it.pos()));
     }
 
     train_info query_train(train_id i, Day d){
@@ -106,13 +155,13 @@ struct train_system{
         train_info cur = it.dat();
         printf("%s %c\n", i, cur.typ);
         if(d > cur.sal2 || d < cur.sal1) throw "train not exist";
-        Tim ti = cur.st_tim;
+        DaTi res(d, cur.st_tim);
         for(int i = 0; i < cur.sta_num; ++i){
             printf("%s ", cur.st[i]);
             if(i == 0) printf("xx-xx xx:xx -> ");
-            else printf("%02d-%02d %02d:%02d -> ", d.month, d.day, ti.hour, ti.minute);
+            else res.out(), printf(" -> ");
             if(i) ti += cur.tr[i - 1];
-            if(i + 1 != cur.sta_num) printf("%02d-%02d %02d:%02d\n", d.month, d.day, ti.hour, ti.minute);
+            if(i + 1 != cur.sta_num) res.out, puts("");
             else printf("xx-xx xx:xx\n");
         }
     }

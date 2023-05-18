@@ -192,6 +192,11 @@ public:
 
     inline bool empty(){return bpt.rt == 0;}
 
+    _val __get_val(int pos){
+        _val res; D.read(pos * sizeof(_val), &res);
+        return res;
+    }
+
     struct iterator{
     private:
         int cur, id;
@@ -213,6 +218,10 @@ public:
 
         bool operator ==(iterator b){return cur == b.cur && id == b.id && now == b.now;}
         bool operator !=(iterator b){return cur != b.cur || id != b.id || now != b.now;}
+
+        inline T key() const{return now->C.get_id(cur).a[id];}
+
+        inline int pos() const{return now->C.get_id(cur).ch[id + 1];}
 
         _val dat(){
             int pos = now->C.get_id(cur).ch[id + 1];
