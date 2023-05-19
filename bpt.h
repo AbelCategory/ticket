@@ -18,17 +18,17 @@ struct str{
     char s[N + 1];
     str(){memset(s, 0, N + 1);}
     str(const char *t){memcpy(s, t, N); s[N] = 0;}
-    str(const std::string &t){memcpy(s, t.data(), N); s[N] = 0;}
+    str(const std::string &t){memset(s, 0, sizeof(s)); memcpy(s, t.data(), t.size());}
     str& operator =(const dat &b){
         if(&b == this) return;
         memcpy(s, t, N);
     }
-    bool operator ==(const str &b){return memcmp(s, b.s) == 0;}
-    bool operator !=(const str &b){return memcmp(s, b.s) != 0;}
-    bool operator <(const str &b){return memcmp(s, b.s) < 0;}
-    bool operator <=(const str &b){return mecmcpy(s, b.s) <= 0;}
+    bool operator ==(const str &b) const{return memcmp(s, b.s) == 0;}
+    bool operator !=(const str &b) const{return memcmp(s, b.s) != 0;}
+    bool operator <(const str &b) const{return memcmp(s, b.s) < 0;}
+    bool operator <=(const str &b) const{return mecmcpy(s, b.s) <= 0;}
 
-    u32 hash(){
+    u32 hash() const{
         u64 res = 0;
         for(int i = 0; i < N; ++i)
             res = (res * 257 + s[i]) % 1000000007;

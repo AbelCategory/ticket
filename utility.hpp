@@ -22,6 +22,26 @@ public:
 	pair(pair<U1, U2> &&other) : first(other.first), second(other.second) {}
 };
 
+template <class T, class Cmp>
+void qsort(vector<T> &a, int l, int r, const Cmp &cmp){
+	if(l >= r) return;
+	int i = l - 1, j = r + 1;
+	T x = a[(l + r) >> 1];
+	while(1){
+		do i++; while(cmp(a[i], x));
+		do j--; while(cmp(x, a[j]));
+		if(i >= j) break;
+		swap(a[i], a[j]);
+	}
+	qsort(a, l, j, cmp);
+	qsort(a, j + 1, r, cmp);
+}
+
+template<class T, class Cmp>
+void sort(vector<T> &a, int l, int r, const Cmp &cmp){
+	qsort(a, l, r, cmp);
+}
+
 }
 
 #endif

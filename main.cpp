@@ -60,7 +60,7 @@ int main(){
             if(buf == "query_profile"){
                 reader();
                 user_name c(a['c']), u(a['u']);
-                auto it = sol.query_profile();
+                auto it = sol.get_profile(c, u);
                 user_info w = it.dat();
                 cout << c.s << " " << w.name.s << " " << w.mail.s << " " << w.pr << '\n';
             }
@@ -69,7 +69,7 @@ int main(){
                 user_name c(a['c']), u(a['u']);
                 int g = -1;
                 if(a['g'].size()) g = str_int(a['g']);
-                auto it = sol.query_profile();
+                auto it = sol.get_profile(c, u);
                 user_info w = it.dat();
                 if(g != -1) w.pr = g;
                 if(a['n'].size()) w.name = str<20>(a['n']);
@@ -109,43 +109,43 @@ int main(){
                     info.arr_time[i] += info.lea_time[i - 1];
                     info.lea_time[i] += info.arr_time[i];
                 }
-
+                sol.add_train(id, info);
             }
             if(buf == "delete_train"){
                 reader();
                 train_id id(a['i']);
-                ticketsystem.delete_train(id);
+                sol.delete_train(id);
                 cout << 0 << '\n';
             }
             if(buf == "release_train"){
                 reader();
                 train_id id(a['i']);
-                ticketsystem.release_train(id);
+                sol.release_train(id);
                 cout << 0 << '\n';
             }
             if(buf == "query_train"){
                 reader();
                 train_id id(a['i']);
-                Dat d(a['d'].data());
-                ticketsystem.query_train(id, d);
+                Day d(a['d'].data());
+                sol.query_train(id, d);
             }
             if(buf == "query_ticket"){
                 reader();
-                Dat d(a['d'].data());
+                Day d(a['d'].data());
                 Tim s(a['s'].data()), t(a['t'].data());
-                ticketsystem.query_ticket(d, s, t, );   
+                sol.query_ticket(d, s, t, );   
             }
             if(buf == "query_transfer"){
                 reader();
-                Dat d(a['d'].data());
+                Day d(a['d'].data());
                 Tim s(a['s'].data()), t(a['t'].data());
-                ticketsystem.query_transfer(d, s, t);
+                sol.query_transfer(d, s, t);
             }
             if(buf == "buy_ticket"){
                 reader();
                 user_name u(a['u']);
                 train_id id(a['i']);
-                Dat d(a['d']); station f(a['f']), t(a['t']);
+                Day d(a['d']); station f(a['f']), t(a['t']);
                 int num = str_int(a['n']);
                 
             }

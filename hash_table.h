@@ -35,7 +35,7 @@ struct hash_map{
 
     iterator end() const{return iterator(-1, this);}
 
-    int find(u32 x){
+    iterator find(u32 x){
         int y = x % N;
         for(int i = hed[y]; ~i; i = nxt[i])
             if(val[i] == x) return iterator(i, this);

@@ -1,0 +1,3 @@
+/mnt/d/railway/build/CMakeFiles/code.dir
+/mnt/d/railway/build/CMakeFiles/edit_cache.dir
+/mnt/d/railway/build/CMakeFiles/rebuild_cache.dir

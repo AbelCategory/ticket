@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/mnt/d/railway/build",
+  "command": "/usr/bin/g++    -O2 -Wall -o CMakeFiles/code.dir/main.cpp.o -c /mnt/d/railway/main.cpp",
+  "file": "/mnt/d/railway/main.cpp"
+}
+]
