@@ -16,6 +16,15 @@ struct hash_map{
         tp = 0;
     }
 
+    void clear(){
+        memset(a, -1, sizeof(a));
+        memset(nxt, -1 ,sizeof(nxt));
+        memset(hed, -1, sizeof(hed));
+        for(int i = 0; i < N; ++ i)
+            st[i] = i;
+        tp = 0;
+    }
+
     struct iterator{
         int pos; hash_map *cur;
         iterator(int _pos = -1, hash_map* _c = nullptr):pos(_pos), cur(_c){}

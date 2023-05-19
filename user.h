@@ -16,12 +16,12 @@ struct user_info{
 };
 
 const int B = 100;
-class user_system{
-private:
+struct user_system{
     bpt<user_name,user_info,B> us;
     hash_map<25117> log;
-public:
+
     user_system():us("user_init","user_ind","user_data"){}
+    
     void add_user(const user_name& c, const user_name& p, user_info& w){
         auto cur = log.find(c.hash());
         if(us.empty()) w.pr = 10;

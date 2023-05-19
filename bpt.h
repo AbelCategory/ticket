@@ -19,6 +19,9 @@ struct str{
     str(){memset(s, 0, N + 1);}
     str(const char *t){memcpy(s, t, N); s[N] = 0;}
     str(const std::string &t){memset(s, 0, sizeof(s)); memcpy(s, t.data(), t.size());}
+    str(const dat& b){
+        memcpy(s, b.s, N);
+    }
     str& operator =(const dat &b){
         if(&b == this) return;
         memcpy(s, t, N);
@@ -202,6 +205,10 @@ public:
         return res;
     }
 
+    void clear(){
+        rt = 0;
+    }
+
     struct iterator{
     private:
         int cur, id;
@@ -268,6 +275,8 @@ public:
     }
     iterator end(){return iterator(-1, 0, this);}
     
+
+private:
     int upper_bound(Node &cur, const T& x){
         int l = 0, r = cur.sz;
         while(l < r){
@@ -277,6 +286,7 @@ public:
         }
         return l;
     }
+public:
 
     iterator find(const T& x){
         int cur = rt;// int _cnt = 0;
