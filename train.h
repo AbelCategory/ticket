@@ -95,11 +95,19 @@ const int _N_ = 100;
 struct train_info{
     int sta_num, seat_num;
     station st[_N_];
-    int cost[_N_], tr_time[_N_], stop_time[_N_];
-    int arr_time[_N_], lea_time[_N_];
+    int cost[_N_], arr_time[_N_], lea_time[_N_];
     int sal1, sal2; Tim st_tim;
     char typ; bool is_re;
-    train_info(){sta_num = 0;}
+    train_info(){
+        sta_num = 0; memset(cost, 0, sizeof(cost));
+        memset(arr_time, 0, sizeof(arr_time)); memset(lea_time, 0, sizeof(lea_time));
+        sal1 = sal2 = 0; is_re = 0;
+    }
+    train_info(int _st, int sat, int s1, int s2, const Tim& ti, char &ch):sta_num(_st), seat_num(sat), sal1(s1), sal2(s2), st_tim(ti), typ(ch){
+        memset(cost, 0, sizeof(cost));
+        memset(arr_time, 0, sizeof(arr_time));
+        memset(lea_time, 0, sizeof(lea_time));
+    }
 };
 
 struct seat_info{
@@ -128,26 +136,26 @@ struct train_system{
     bpt<traid_ti, seat_info, B> tic;
     bpt<train_sta, sta_info, 100> sta;
     train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_init"){}
-    void add_train(const train_id& i, const train_info &t){
-        if(tr.find(i) != tr.end()) throw "train exist";
-        tr.insert(i, t);
+    void add_train(const train_id& id, const train_info &t){
+        if(tr.find(id) != tr.end()) throw "train exist";
+        tr.insert(id, t);
     }
 
     void delete_train(train_id i){
-        if(tr.find(i) == tr.end()) throw "train not exist";
+        if(tr.find(id) == tr.end()) throw "train not exist";
         tr.erase(i);
     }
 
-    void release_train(train_id i){
-        auto it = tr.find(i);
+    void release_train(train_id id){
+        auto it = tr.find(id);
         if(it == tr.end()) throw "train not exist";
         train_info cur = it.dat();
         if(cur.is_re) throw "train has been released";
         cur.is_re = 1; it.mod(cur);
         for(int d = cur.sal1; d <= cur.sal2; ++d)
-            tic.insert(train_ti(i, d), seat_info(cur.sta_num, cur.seat_num));
+            tic.insert(train_ti(id, d), seat_info(cur.sta_num, cur.seat_num));
         for(int j = 0; j < sta_num; ++j)
-            sta.insert(train_sta(st[j], i), sta_info(j, it.pos()));
+            sta.insert(train_sta(st[j], id), sta_info(j, it.pos()));
     }
 
     train_info query_train(train_id i, Day d){

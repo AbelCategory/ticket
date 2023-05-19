@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <string>
 #include "hash_table.h"
 
 using u32 = unsigned;
@@ -17,7 +18,7 @@ struct str{
     char s[N + 1];
     str(){memset(s, 0, N + 1);}
     str(const char *t){memcpy(s, t, N); s[N] = 0;}
-    str(const string &t){memcpy(s, t.data(), N); s[N] = 0;}
+    str(const std::string &t){memcpy(s, t.data(), N); s[N] = 0;}
     str& operator =(const dat &b){
         if(&b == this) return;
         memcpy(s, t, N);

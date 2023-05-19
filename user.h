@@ -49,13 +49,13 @@ public:
         log.erase(id);
     }
 
-    bpt<user_name, user_info, B>::iterator get_profile(const user_name& c, const user_name& u){
+    bpt<user_name, user_info, B>::iterator get_profile(const user_name& c, const user_name& u, int g = -1){
         auto cur = log.find(c.hash());
         if(cur == us.end()) throw "user not loggin";
         auto now = us.find(u);
         if(now == us.end()) throw "no such user";
         user_info p = now.dat();
-        if(p.pr > cur.se()) throw "invalid priorty";
+        if(p.pr > cur.se() || g > cur.se()) throw "invalid priorty";
         return now;
     }
 };
