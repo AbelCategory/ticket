@@ -2,6 +2,16 @@
 #define SJTU_UTILITY_HPP
 
 #include "vector.hpp"
+#include <string>
+
+std::string to_str2(int x){
+	std::string s;
+	for(int i = 0; i < 2; ++i){
+		s = char(x % 10 + 48) + s;
+		x /= 10;
+	}
+	return s;
+}
 
 namespace sjtu {
 

@@ -21,10 +21,10 @@ struct Day{
     }
     Day(int x){
         month = std::lower_bound(pre_mon, pre_mon + 12, x) - pre_mon;
-        day = x - mon[month];
+        day = x - pre_mon[month - 1];
     }
     Day(const Day &b):month(b.month), day(b.day){}
-    void out(){cout << month << "-" << day;}
+    void out(){cout << to_str2(month) << "-" << to_str2(day);}
     inline int get_id() const{return pre_mon[month - 1] + day;}
 
     inline bool operator <(const Day& b) const{return month < b.month || month == b.month && day < b.day;}
@@ -55,7 +55,7 @@ struct Tim{
         minute = (s[3] - 48) * 10 + s[4] - 48;
     }
     Tim(int ti):hour(ti / 60), minute(ti % 60){}
-    void out(){cout <<  hour << ":" << minute;}
+    void out(){cout <<  to_str2(hour) << ":" << to_str2(minute);}
 
     inline int get_id() const{return hour * 60 + minute;}
 
@@ -82,7 +82,7 @@ struct DaTi{
     DaTi(){}
     DaTi(Day _d, Tim _t):d(_d), t(_t){}
     DaTi(const DaTi& b):d(b.d), t(b.t){}
-    void out(){d.out(); putchar(' '); t.out();}
+    void out(){d.out(); cout << " "; t.out();}
 
     inline bool operator <(const DaTi& b) const{return d < b.d || d == b.d && t < b.t;}
     inline bool operator <=(const DaTi& b) const{return d < b.d || d == b.d && t <= b.t;}
@@ -113,6 +113,7 @@ struct train_info{
         memset(cost, 0, sizeof(cost));
         memset(arr_time, 0, sizeof(arr_time));
         memset(lea_time, 0, sizeof(lea_time));
+        is_re = 0;
     }
 };
 
@@ -151,7 +152,10 @@ struct train_system{
     }
 
     void delete_train(train_id id){
+        auto it = tr.find(id);
         if(tr.find(id) == tr.end()) throw "train not exist";
+        train_info cur = it.dat();
+        if(cur.is_re) throw "cannot delete";
         tr.erase(id);
     }
 

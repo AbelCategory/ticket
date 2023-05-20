@@ -113,6 +113,7 @@ int main(){
                     info.lea_time[i] += info.arr_time[i];
                 }
                 sol.add_train(id, info);
+                cout << 0 << '\n';
             }
             if(buf == "delete_train"){
                 reader();
@@ -157,13 +158,13 @@ int main(){
                 reader();
                 user_name u(a['u']);
                 sol.query_order(u);
-                
             }
             if(buf == "refund_ticket"){
                 reader();
                 user_name u(a['u']);
                 int n = str_int(a['n']);
                 sol.refund_ticket(u, n);
+                cout << 0 << "\n";
             }
             if(buf == "clean"){
                 sol.clean();

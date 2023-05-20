@@ -20,9 +20,9 @@ struct ticket{
     void out(){
         cout << tr.s << " " << s.s << " ";
         sta.out();
-        cout << " -> ";
+        cout << " -> " << t.s << " ";
         en.out();
-        cout << " " << t.s << " " << cost << " " << seat << "\n";
+        cout  << " " << cost << " " << seat << "\n";
     }
 };
 
@@ -43,7 +43,7 @@ struct order{
     s(S), t(T),lea(_l), arr(_r), statue(0), tic_num(tic), cost(co), pos(0), l(L), r(R){}
 };
 
-const char* order_str[3] = {"[refunded]", "[pending]", "success"};
+const char* order_str[3] = {"[refunded]", "[pending]", "[success]"};
 
 struct wait{
     int pos;
@@ -68,7 +68,7 @@ struct user_tim{
 
 struct ticketsystem : public user_system, public train_system{
     bpt<user_tim, order, 150> ord;
-    bpt<wait_id, wait, 150> wait_list;
+    bpt<wait_id, wait, 120> wait_list;
 
     ticketsystem(): ord("order_init", "order_key", "order_data"), wait_list("wait_init", "wait_key", "wait_data"){}
     //0: Time 1: Cost
@@ -76,10 +76,10 @@ struct ticketsystem : public user_system, public train_system{
         auto i1 = sta.lower_bound(train_sta(s, train_id()));
         auto i2 = sta.lower_bound(train_sta(t, train_id()));
         sjtu::vector<ticket> res;
-        for(; i1.key().first == s; ++i1){
+        for(; i1 != sta.end() && i1.key().first == s; ++i1){
             train_id tra = i1.key().second;
-            for(; i2.key().first == t && i2.key().second < tra; ++i2);
-            if(i2.key().first != t) break;
+            for(; i2 != sta.end() && i2.key().first == t && i2.key().second < tra; ++i2);
+            if(i2 == sta.end() || i2.key().first != t) break;
             if(i2.key().second != tra) continue;
             sta_info S = i1.dat(), T = i2.dat();
             int l = S.first, r = T.first;
@@ -92,8 +92,8 @@ struct ticketsystem : public user_system, public train_system{
             if(d < fir_arr.d|| lst_arr.d < d) continue;
             int zz = d.get_id() - fir_arr.d.get_id();
             DaTi st_time(Day(e.sal1) + zz, e.st_tim), en_time = st_time;
-            st_time += e.arr_time[l]; en_time += e.lea_time[r];
-            seat_info g = tic.find(train_ti(tra, d.get_id())).dat();
+            st_time += e.lea_time[l]; en_time += e.arr_time[r];
+            seat_info g = tic.find(train_ti(tra, e.sal1 + zz)).dat();
             res.push_back(ticket(tra, s, t, e.cost[r] - e.cost[l], g.qmin(l, r), st_time, en_time, e.arr_time[r] - e.lea_time[l]));
         }
         auto cmp = !_order ? [](ticket x, ticket y){
@@ -122,7 +122,7 @@ struct ticketsystem : public user_system, public train_system{
             return x.A.tr < y.A.tr || x.A.tr == y.A.tr && x.B.tr < y.B.tr;
         };
         bool ok = 0; transfer ans;
-        for(; it.key().first == s; ++it){
+        for(; it != sta.end() && it.key().first == s; ++it){
             sjtu::map<station, int> A;
             train_id tr1 = it.key().second;
             sta_info st = it.dat();
@@ -137,7 +137,7 @@ struct ticketsystem : public user_system, public train_system{
             int D1 = d.get_id() - ar1.d.get_id();
             DaTi fi_S(d, ar1.t); fi_S += tr_in.lea_time[l];
             seat_info s1 = tic.find(train_ti(tr1, tr_in.sal1 + D1)).dat();
-            for(; j.key().first == t; ++j){
+            for(; j != sta.end() && j.key().first == t; ++j){
                 train_id tr2 = j.key().second;
                 sta_info st1 = j.dat();
                 train_info tr_out = tr.__get_val(st1.second);
@@ -169,24 +169,35 @@ struct ticketsystem : public user_system, public train_system{
                 }
             }
         }
-        if(!ok) throw "no such transfer";
-        ans.A.out();
-        ans.B.out();
+        if(!ok) cout << 0 << '\n';
+        else{
+            ans.A.out();
+            ans.B.out();
+        }
     }
 
     void buy_ticket(int uid, const user_name& u, const train_id& id, const station& s, const station &t, const Day& d, int num, bool q){
         auto it = tr.find(id);
-        auto tr_it = tic.find(train_ti(id, d.get_id()));
-        if(tr_it == tic.end()) throw "no such train on that day";
+        if(it == tr.end()) throw "no train";
+        // auto tr_it = tic.find(train_ti(id, d.get_id()));
+        // if(tr_it == tic.end()) throw "no such train on that day";
         train_info tf = it.dat(); int l = -1, r = -1;
+        if(!tf.is_re) throw "train not released";
         for(int i = 0; i < tf.sta_num; ++i){
             if(s == tf.st[i]) l = i;
-            else if(s == tf.st[i]) r = i;
+            else if(t == tf.st[i]) r = i;
         }
-        if(l == -1 || r == -1 || l < r) throw "no such station";
+        if(l == -1 || r == -1 || l >= r) throw "no such station";
+        DaTi t1(Day(tf.sal1), tf.st_tim), t2(Day(tf.sal2), tf.st_tim);
+        t1 += tf.lea_time[l]; t2 += tf.lea_time[l];
+        if(d < t1.d || t2.d < d) throw "no such train on that day";
+        int D = d.get_id() - t1.d.get_id();
+        DaTi L = t1, R = t1; L.d += D; R.d += D;
+        R += tf.arr_time[r] - tf.lea_time[l];
+        auto tr_it = tic.find(train_ti(id, tf.sal1 + D));
         seat_info sat = tr_it.dat();
-        DaTi L(d, tf.st_tim), R(L);
-        L += tf.lea_time[l]; R += tf.arr_time[r];
+        // DaTi L(d, tf.st_tim), R(L);
+        // L += tf.lea_time[l]; R += tf.arr_time[r];
         order now(id, s, t, L, R, num, tf.cost[r] - tf.cost[l], l, r); now.pos = tr_it.pos();
         int nu = sat.qmin(l, r);
         if(nu < num){
@@ -211,11 +222,11 @@ struct ticketsystem : public user_system, public train_system{
         if(log.find(id) == log.end()) throw "not loggin";
         auto it = ord.lower_bound(user_tim(u, 2147483647)), cur = it;
         int cnt = 0;
-        for(; it.key().usr == u; ++it) ++cnt;
+        for(; it != ord.end() && it.key().usr == u; ++it) ++cnt;
         cout << cnt << '\n';
         for(auto i = cur; i != it; ++i){
             order o = i.dat();
-            cout << order_str[o.statue] << " " << o.id.s << " " << o.s.s;
+            cout << order_str[o.statue] << " " << o.id.s << " " << o.s.s << " ";
             o.lea.out();
             cout << " -> " << o.t.s << " ";
             o.arr.out();
@@ -241,7 +252,7 @@ struct ticketsystem : public user_system, public train_system{
             sat.add(o.l, o.r, -o.tic_num);
             auto cur = wait_list.lower_bound(wait_id(o.id, 0));
             sjtu::vector<wait_id> to_erase;
-            for(; cur.key().first == o.id; ++cur){
+            for(; cur != wait_list.end() && cur.key().first == o.id; ++cur){
                 wait w = cur.dat();
                 if(sat.qmin(w.l, w.r) >= w.tic){
                     sat.add(w.l, w.r, w.tic);

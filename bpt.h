@@ -71,7 +71,6 @@ struct filesystem{
         fseek(f, pos, SEEK_SET);
         //cerr << sizeof(T) << endl;
         fwrite((const char *)x, sizeof(T), 1, f);
-        fflush(f);
         ++cnt2;
     }
 };
@@ -80,7 +79,7 @@ int filesystem::cnt1 = 0, filesystem::cnt2=0;
 const int _M = 500;
 template<class T, class _val, int _N>
 class bpt{
-private:
+public:
     friend class ticketsystem;
     int rt, cnt, s[100], t[100], tot;
     struct Node{
