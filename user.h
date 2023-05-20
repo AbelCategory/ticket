@@ -54,7 +54,8 @@ struct user_system{
         auto now = us.find(u);
         if(now == us.end()) throw "no such user";
         user_info p = now.dat();
-        if(p.pr > cur.se() || g > cur.se()) throw "invalid priorty";
+        if(p.pr > cur.se() || g >= cur.se()) throw "invalid priorty";
+        if(p.pr == cur.se() && c != u) throw "invalid priority";
         return now;
     }
 };

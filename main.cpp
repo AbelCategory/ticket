@@ -19,6 +19,7 @@ int str_int(const std::string& s){
 }
 
 int main(){
+    freopen("1.in","r",stdin);
     std::ios::sync_with_stdio(false);
     cin >> tim_cur;
     while(cin >> buf){
@@ -63,7 +64,7 @@ int main(){
                 user_name c(a['c']), u(a['u']);
                 auto it = sol.get_profile(c, u);
                 user_info w = it.dat();
-                cout << c.s << " " << w.name.s << " " << w.mail.s << " " << w.pr << '\n';
+                cout << u.s << " " << w.name.s << " " << w.mail.s << " " << w.pr << '\n';
             }
             if(buf == "modify_profile"){
                 reader();
@@ -76,6 +77,7 @@ int main(){
                 if(a['n'].size()) w.name = str<20>(a['n']);
                 if(a['m'].size()) w.mail = str<30>(a['m']);
                 if(a['p'].size()) w.pw = pass_word(a['p']);
+                cout << u.s << " " << w.name.s << " " << w.mail.s << " " << w.pr << '\n';
                 it.mod(w);
             }
             if(buf == "add_train"){
@@ -167,7 +169,7 @@ int main(){
                 sol.clean();
             }
         }
-        catch(...){
+        catch(const char *s){
             cout << -1 << '\n';
         }
         tim_cur = nxt_tim_cur;

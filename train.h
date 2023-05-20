@@ -143,7 +143,7 @@ struct train_system{
     bpt<train_ti, seat_info, 100> tic;
     bpt<train_sta, sta_info, 100> sta;
 
-    train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_init"){}
+    train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_data"){}
     
     void add_train(const train_id& id, const train_info &t){
         if(tr.find(id) != tr.end()) throw "train exist";

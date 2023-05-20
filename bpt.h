@@ -71,7 +71,7 @@ struct filesystem{
         fseek(f, pos, SEEK_SET);
         //cerr << sizeof(T) << endl;
         fwrite((const char *)x, sizeof(T), 1, f);
-        //fflush(f);
+        fflush(f);
         ++cnt2;
     }
 };
@@ -330,7 +330,7 @@ public:
     int split_leaf(int id, Node &cur){
         Node nxt; int mid = cur.sz / 2; ++cnt;
         memcpy(nxt.a, cur.a + mid, (cur.sz - mid) * sizeof(T));
-        memcpy(nxt.ch + 1, cur.ch + mid + 1, (cur.sz - mid) * sizeof(T));
+        memcpy(nxt.ch + 1, cur.ch + mid + 1, (cur.sz - mid) * sizeof(int));
         //for(int i = 0; i < 5; ++i) fprintf(stderr, "%d ",nxt.a[2].fi[i]);
         nxt.sz = cur.sz - mid; cur.sz = mid;
         nxt.ch[0] = cur.ch[0]; cur.ch[0] = cnt;
@@ -349,14 +349,14 @@ public:
 
     void len_leaf(int l, int r, Node &L, Node &R){
         L.a[L.sz] = R.a[0]; memmove(R.a, R.a + 1, (R.sz - 1) * sizeof(T));
-        L.ch[L.sz + 1] = R.ch[1]; memmove(R.ch + 1, R.ch + 2, (R.sz - 1) * sizeof(T));
+        L.ch[L.sz + 1] = R.ch[1]; memmove(R.ch + 1, R.ch + 2, (R.sz - 1) * sizeof(int));
         ++L.sz; --R.sz;
         C.modify(l, L); C.modify(r, R);
     }
 
     void ren_leaf(int l, int r, Node &L, Node &R){
         memmove(R.a + 1, R.a, R.sz * sizeof(T)); R.a[0] = L.a[L.sz - 1];
-        memmove(R.ch + 2, R.ch + 1, R.sz * sizeof(T)); R.ch[1] = L.ch[L.sz];
+        memmove(R.ch + 2, R.ch + 1, R.sz * sizeof(int)); R.ch[1] = L.ch[L.sz];
         --L.sz; ++R.sz;
         C.modify(l, L); C.modify(r, R);
     }
@@ -377,7 +377,7 @@ public:
 
     void merge_leaf(int l, Node &L, Node &R){
         memcpy(L.a + L.sz, R.a, R.sz * sizeof(T));
-        memcpy(L.ch + L.sz + 1, R.ch + 1, R.sz * sizeof(T));
+        memcpy(L.ch + L.sz + 1, R.ch + 1, R.sz * sizeof(int));
         L.ch[0] = R.ch[0]; L.sz += R.sz;
         C.modify(l, L);
     }
@@ -393,7 +393,7 @@ public:
         __mod_val(++tot, v);
         if(rt == 0){
             ++cnt; Node ncur;
-            ncur.a[0] = x; ncur.sz = 1;
+            ncur.a[0] = x; ncur.sz = 1; ncur.ch[1] = tot;
             rt = cnt; C.modify(cnt, ncur);
             return;
         }
@@ -405,7 +405,8 @@ public:
                 if(i && val.a[i - 1] == x) return;
                 bool ok = i == 0;
                 memmove(val.a + i + 1, val.a + i, (val.sz - i) * sizeof(T));
-                ++ val.sz; val.a[i] = x;
+                memmove(val.ch + i + 2, val.ch + i + 1, (val.sz - i) * sizeof(int));
+                ++ val.sz; val.a[i] = x; val.ch[i + 1] = tot;
                 if(val.sz == _N){
                     int cc = split_leaf(cur, val); --dep;
                     T w = val.a[val.sz];
@@ -454,6 +455,7 @@ public:
                 if(i < 0 || val.a[i] != x) return; 
                 --val.sz;
                 memmove(val.a + i, val.a + i + 1, (val.sz - i) * sizeof(T));
+                memmove(val.ch + i + 1, val.ch + i + 2, (val.sz - i) * sizeof(int));
                 if(cur == rt){
                     if(val.sz == 0){rt = 0; return;}
                     C.modify(cur, val);
