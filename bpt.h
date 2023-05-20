@@ -76,7 +76,7 @@ struct filesystem{
 };
 int filesystem::cnt1 = 0, filesystem::cnt2=0;
 
-const int _M = 500;
+const int _M = 20;
 template<class T, class _val, int _N>
 class bpt{
 public:
