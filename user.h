@@ -15,9 +15,8 @@ struct user_info{
     user_info(const pass_word &_pw, const str<20> &_name, const str<30> &_mail, const int g):pw(_pw), name(_name), mail(_mail), pr(g){}
 };
 
-const int B = 100;
 struct user_system{
-    bpt<user_name,user_info,B> us;
+    bpt<user_name, user_info, 100> us;
     hash_map<25117> log;
 
     user_system():us("user_init","user_ind","user_data"){}
@@ -49,7 +48,7 @@ struct user_system{
         log.erase(id);
     }
 
-    bpt<user_name, user_info, B>::iterator get_profile(const user_name& c, const user_name& u, int g = -1){
+    bpt<user_name, user_info, 100>::iterator get_profile(const user_name& c, const user_name& u, int g = -1){
         auto cur = log.find(c.hash());
         if(cur == log.end()) throw "user not loggin";
         auto now = us.find(u);

@@ -7,6 +7,8 @@
 #include "vector.hpp"
 #include "map.hpp"
 
+using ll = long long;
+
 struct ticket{
     train_id tr;
     station s, t;
@@ -32,19 +34,37 @@ struct transfer{
 };
 
 struct order{
-    train_id id;
+    train_id id; int pos;
     station s, t;
     DaTi lea, arr;
-    int statue;
-    order(){}
+    int statue, tic_num, cost, l, r;
+    order(){statue = 0; pos = 0; l = r = 0;}
+    order(const train_id& tr, const station& S, const station &T, const DaTi &_l, const DaTi &_r, int tic, int co, int L, int R):id(tr), 
+    s(S), t(T),lea(_l), arr(_r), statue(0), tic_num(tic), cost(co), pos(0), l(L), r(R){}
 };
 
-struct wait{
+const char* order_str[3] = {"[refunded]", "[pending]", "success"};
 
+struct wait{
+    int pos;
+    int l, r, tic;
+    wait(){pos = l = r = tic = 0;}
+    wait(int p, int L, int R, int t):pos(p), l(L), r(R), tic(t){}
+    wait(const wait &w):pos(w.pos), l(w.l), r(w.r), tic(w.tic){}
 };
 
 using wait_id = sjtu::pair<train_id, int>;
-using user_tim = sjtu::pair<user_name, int>;
+
+struct user_tim{
+    user_name usr;
+    int tim;
+    user_tim(){tim = 0;}
+    user_tim(user_name u, int t):usr(u), tim(t){}
+    user_tim(const user_tim& b):usr(b.usr), tim(b.tim){}
+    inline bool operator <(const user_tim &b) const{return usr < b.usr || usr == b.usr && tim > b.tim;}
+    inline bool operator ==(const user_tim &b) const{return usr == b.usr && tim == b.tim;}
+};
+// using user_tim = sjtu::pair<user_name, int>;
 
 struct ticketsystem : public user_system, public train_system{
     bpt<user_tim, order, 150> ord;
@@ -76,7 +96,7 @@ struct ticketsystem : public user_system, public train_system{
             seat_info g = tic.find(train_ti(tra, d.get_id())).dat();
             res.push_back(ticket(tra, s, t, e.cost[r] - e.cost[l], g.qmin(l, r), st_time, en_time, e.arr_time[r] - e.lea_time[l]));
         }
-        auto cmp = _order ? [](ticket x, ticket y){
+        auto cmp = !_order ? [](ticket x, ticket y){
             return x.tim < y.tim || x.tim == y.tim && x.tr < y.tr;
         } : [](ticket x, ticket y){
             return x.cost < y.cost || x.cost == y.cost && x.tr < y.tr;
@@ -92,7 +112,7 @@ struct ticketsystem : public user_system, public train_system{
     void query_transfer(const Day& d, const station& s, const station& t, bool _order){
         auto it = sta.lower_bound(train_sta(s, train_id()));
         auto it2 = sta.lower_bound(train_sta(t, train_id()));
-        auto cmp = _order ? [](transfer x, transfer y){
+        auto cmp = !_order ? [](transfer x, transfer y){
             if(x.time != y.time) return x.time < y.time;
             if(x.cost() != y.cost()) return x.cost() < y.cost();
             return x.A.tr < y.A.tr || x.A.tr == y.A.tr && x.B.tr < y.B.tr;
@@ -115,7 +135,7 @@ struct ticketsystem : public user_system, public train_system{
             ar1 += tr_in.lea_time[l]; ar2 += tr_in.lea_time[l];
             if(d < ar1.d || ar2.d < d) continue;
             int D1 = d.get_id() - ar1.d.get_id();
-            DaTi fi_S(d, ar1.t);
+            DaTi fi_S(d, ar1.t); fi_S += tr_in.lea_time[l];
             seat_info s1 = tic.find(train_ti(tr1, tr_in.sal1 + D1)).dat();
             for(; j.key().first == t; ++j){
                 train_id tr2 = j.key().second;
@@ -125,7 +145,7 @@ struct ticketsystem : public user_system, public train_system{
                 for(int L = R - 1; L >= 0; --L){
                     auto _it = A.find(tr_out.st[L]);
                     if(_it == A.end()) continue;
-                    r = it -> second;
+                    r = _it -> second;
                     station cur = _it -> first;
                     DaTi fi_T = fi_S; fi_T += tr_in.arr_time[r] - tr_in.lea_time[l];
                     DaTi le1(Day(tr_out.sal1), tr_out.st_tim), le2(Day(tr_out.sal2), tr_out.st_tim);
@@ -138,6 +158,8 @@ struct ticketsystem : public user_system, public train_system{
                         se_S += D2; ptime += D2;
                         if(se_S < fi_T) se_S.d += 1, ptime++;
                     }
+                    DaTi se_T = se_S;
+                    se_S += tr_out.lea_time[L]; se_T += tr_out.arr_time[R];
                     seat_info s2 = tic.find(train_ti(tr2, ptime)).dat();
                     ticket A(tr1, s, cur, tr_in.cost[r] - tr_in.cost[l], s1.qmin(l, r), fi_S, fi_T, tr_in.arr_time[r] - tr_in.lea_time[l]);
                     ticket B(tr2, cur, t, tr_out.cost[R] - tr_out.cost[L], s2.qmin(L, R), se_S, se_T, tr_out.arr_time[R] - tr_out.lea_time[L]);
@@ -152,7 +174,7 @@ struct ticketsystem : public user_system, public train_system{
         ans.B.out();
     }
 
-    void buy_ticket(int uid, const user_name& u, const train_id& id, const station& s, const station &t, const Dat& d, int num, bool q){
+    void buy_ticket(int uid, const user_name& u, const train_id& id, const station& s, const station &t, const Day& d, int num, bool q){
         auto it = tr.find(id);
         auto tr_it = tic.find(train_ti(id, d.get_id()));
         if(tr_it == tic.end()) throw "no such train on that day";
@@ -163,15 +185,15 @@ struct ticketsystem : public user_system, public train_system{
         }
         if(l == -1 || r == -1 || l < r) throw "no such station";
         seat_info sat = tr_it.dat();
-        order now();
+        DaTi L(d, tf.st_tim), R(L);
+        L += tf.lea_time[l]; R += tf.arr_time[r];
+        order now(id, s, t, L, R, num, tf.cost[r] - tf.cost[l], l, r); now.pos = tr_it.pos();
         int nu = sat.qmin(l, r);
         if(nu < num){
-            if(!q){
-                ord.insert(user_tim(u, uid), now);
-                throw "lack of ticket";
-            }
+            if(!q || q && num > tf.seat_num) throw "lack of ticket";
             else{
-                wait_list.insert();
+                ord.insert(user_tim(u, uid), now);
+                wait_list.insert(wait_id(id, uid), wait(ord.tot, l, r, nu));
                 cout << "queue\n";
                 now.statue = 1;
             }
@@ -180,16 +202,68 @@ struct ticketsystem : public user_system, public train_system{
             sat.add(l, r, num);
             tr_it.mod(sat); now.statue = 2;
             cout << 1ll * (tf.cost[r] - tf.cost[l]) * num << '\n';
+            ord.insert(user_tim(u, uid), now);
         }
-        ord.insert(user_tim(u, uid), now);
+    }
+
+    void query_order(user_name u){
+        u32 id = u.hash();
+        if(log.find(id) == log.end()) throw "not loggin";
+        auto it = ord.lower_bound(user_tim(u, 2147483647)), cur = it;
+        int cnt = 0;
+        for(; it.key().usr == u; ++it) ++cnt;
+        cout << cnt << '\n';
+        for(auto i = cur; i != it; ++i){
+            order o = i.dat();
+            cout << order_str[o.statue] << " " << o.id.s << " " << o.s.s;
+            o.lea.out();
+            cout << " -> " << o.t.s << " ";
+            o.arr.out();
+            cout << " " << o.cost << " " << o.tic_num << "\n";
+        }
     }
     
-    void refund_ticket(){
-
+    void refund_ticket(user_name u, int n = 1){
+        u32 id = u.hash();
+        if(log.find(id) == log.end()) throw "not loggin";
+        auto it = ord.lower_bound(user_tim(u, 2147483647));
+        for(int i = 1; i < n; ++i) ++it;
+        if(it == ord.end() || it.key().usr != u) throw "not enough order";
+        order o = it.dat();
+        if(o.statue == 0) throw "already refunded";
+        if(o.statue == 1){
+            o.statue = 0; it.mod(o);
+            wait_list.erase(wait_id(o.id, it.key().tim));
+        }
+        else{
+            o.statue = 0; it.mod(o);
+            auto sat = tic.__get_val(o.pos);
+            sat.add(o.l, o.r, -o.tic_num);
+            auto cur = wait_list.lower_bound(wait_id(o.id, 0));
+            sjtu::vector<wait_id> to_erase;
+            for(; cur.key().first == o.id; ++cur){
+                wait w = cur.dat();
+                if(sat.qmin(w.l, w.r) >= w.tic){
+                    sat.add(w.l, w.r, w.tic);
+                    auto ord_in = ord.__get_val(w.pos);
+                    ord_in.statue = 2;
+                    ord.__mod_val(w.pos, ord_in);
+                    to_erase.push_back(cur.key()); 
+                }
+            }
+            for(auto it = to_erase.begin(); it != to_erase.end(); ++it)
+                wait_list.erase(*it);
+        }
     }
+
     void clean(){
         us.clear();
-
+        log.clear();
+        tr.clear();
+        tic.clear();
+        sta.clear();
+        ord.clear();
+        wait_list.clear();
     }
 };
 

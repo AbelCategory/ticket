@@ -138,10 +138,9 @@ using train_sta = sjtu::pair<station, train_id>;
 // station_pos file_pos
 using sta_info = sjtu::pair<int, int>;
 
-const int B = 100;
 struct train_system{
-    bpt<train_id, train_info, B> tr;
-    bpt<train_ti, seat_info, B> tic;
+    bpt<train_id, train_info, 100> tr;
+    bpt<train_ti, seat_info, 100> tic;
     bpt<train_sta, sta_info, 100> sta;
 
     train_system():tr("train_init", "train_key", "train_data"), tic("tic_init", "tic_key", "tic_data"), sta("station_init", "station_key", "station_init"){}
@@ -168,7 +167,7 @@ struct train_system{
             sta.insert(train_sta(cur.st[j], id), sta_info(j, it.pos()));
     }
 
-    train_info query_train(train_id i, Day d){
+    void query_train(train_id i, Day d){
         auto it = tr.find(i);
         if(it == tr.end()) throw "train not exist";
         train_info cur = it.dat();
@@ -177,7 +176,7 @@ struct train_system{
         DaTi res(d, cur.st_tim);
         seat_info sat;
         if(cur.is_re){
-            auto j = tic.find(train_ti(i, d));
+            auto j = tic.find(train_ti(i, d.get_id()));
             sat = seat_info(cur.sta_num, cur.seat_num);
         }
         else sat = seat_info(cur.sta_num, cur.seat_num);

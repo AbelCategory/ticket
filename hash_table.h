@@ -4,8 +4,8 @@
 using u32 = unsigned;
 template<int N>
 struct hash_map{
-    u32 a[N];
-    int nxt[N], val[N], hed[N];
+    u32 val[N];
+    int nxt[N], a[N], hed[N];
     int st[N], tp;
     hash_map(){
         memset(a, -1, sizeof(a));
@@ -30,19 +30,19 @@ struct hash_map{
         iterator(int _pos = -1, hash_map* _c = nullptr):pos(_pos), cur(_c){}
         iterator(const iterator& b):pos(b.pos), cur(b.cur){}
         iterator& operator =(const iterator &b){
-            if(&b == this) return;
+            if(&b == this) return *this;
             pos = b.pos; cur = b.cur;
             return *this;
         }
 
         u32 fi() const{return val[pos];}
-        int& se() const{return a[pos];}
+        int& se() const{return cur -> a[pos];}
 
         inline bool operator ==(const iterator &b){return pos == b.pos && cur == b.cur;}
         inline bool operator !=(const iterator &b){return pos != b.pos || cur != b.cur;}
     };
 
-    iterator end() const{return iterator(-1, this);}
+    iterator end(){return iterator(-1, this);}
 
     iterator find(u32 x){
         int y = x % N;

@@ -1,9 +1,16 @@
 #ifndef SJTU_UTILITY_HPP
 #define SJTU_UTILITY_HPP
 
-#include <utility>
+#include "vector.hpp"
 
 namespace sjtu {
+
+template<typename T>
+void swap(T &a,T &b){
+	T t = a;
+	a = b;
+	b = t;
+}
 
 template<class T1, class T2>
 class pair {
@@ -14,12 +21,22 @@ public:
 	pair(const pair &other) = default;
 	pair(pair &&other) = default;
 	pair(const T1 &x, const T2 &y) : first(x), second(y) {}
+	pair& operator =(const pair &oth){
+		if(this == &oth) return *this;
+		first = oth.first;
+		second = oth.second;
+		return *this;
+	}
 	template<class U1, class U2>
 	pair(U1 &&x, U2 &&y) : first(x), second(y) {}
 	template<class U1, class U2>
 	pair(const pair<U1, U2> &other) : first(other.first), second(other.second) {}
 	template<class U1, class U2>
 	pair(pair<U1, U2> &&other) : first(other.first), second(other.second) {}
+
+	inline bool operator <(const pair& B) const{return first < B.first || first == B.first && second < B.second;}
+	inline bool operator ==(const pair& B) const{return first == B.first && second == B.second;}
+	inline bool operator !=(const pair& B) const{return first != B.first || second != B.second;}
 };
 
 template <class T, class Cmp>

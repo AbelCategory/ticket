@@ -13,13 +13,6 @@
 
 namespace sjtu {
 
-template<typename T>
-void swap(T &a,T &b){
-	T t = a;
-	a = b;
-	b = t;
-}
-
 template<
 	class Key,
 	class T,

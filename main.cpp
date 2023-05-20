@@ -11,7 +11,7 @@ std::string buf, tim_cur, nxt_tim_cur;
 
 ticketsystem sol;
 
-int str_int(const string& s){
+int str_int(const std::string& s){
     int n = s.size(), res = 0;
     for(int i = 0; i < n; ++i)
         res = res * 10 + s[i] - 48;
@@ -19,7 +19,7 @@ int str_int(const string& s){
 }
 
 int main(){
-    ios::sync_with_stdio(false);
+    std::ios::sync_with_stdio(false);
     cin >> tim_cur;
     while(cin >> buf){
         std::string a[128];
@@ -32,8 +32,9 @@ int main(){
                 cin >> a[buf[1]];
             }
         };
+        cout << tim_cur << " ";
         if(buf == "exit"){
-            sol.exit();
+            cout << "bye" << '\n';
             return 0;
         }
         try{
@@ -81,8 +82,8 @@ int main(){
                 reader();
                 train_id id(a['i']);
                 std::string S = a['d'].substr(0, 5), T = a['d'].substr(6, 5);
-                Dat st(S.data()), en(T.data());
-                train_info info(a['n'], a['m'], d, st.get_id(), en.get_id(), Tim(a['x']), a['y'][0]);
+                Day st(S.data()), en(T.data());
+                train_info info(str_int(a['n']), str_int(a['m']), st.get_id(), en.get_id(), Tim(a['x'].data()), a['y'][0]);
                 int p = 0, x = 0, len = a['s'].size();
                 for(int i = 0; i < len; ++i){
                     if(a['s'][i] == '|') ++p, x = 0;
@@ -132,28 +133,38 @@ int main(){
             if(buf == "query_ticket"){
                 reader();
                 Day d(a['d'].data());
-                Tim s(a['s'].data()), t(a['t'].data());
-                sol.query_ticket(d, s, t, );   
+                station s(a['s']), t(a['t']);
+                sol.query_ticket(d, s, t, a['p'] == "cost");   
             }
             if(buf == "query_transfer"){
                 reader();
                 Day d(a['d'].data());
-                Tim s(a['s'].data()), t(a['t'].data());
-                sol.query_transfer(d, s, t);
+                station s(a['s']), t(a['t']);
+                sol.query_transfer(d, s, t, a['p'] == "cost");
             }
             if(buf == "buy_ticket"){
                 reader();
                 user_name u(a['u']);
                 train_id id(a['i']);
-                Day d(a['d']); station f(a['f']), t(a['t']);
+                Day d(a['d'].data()); station f(a['f']), t(a['t']);
                 int num = str_int(a['n']);
-                
+                int uid = str_int(tim_cur.substr(1, tim_cur.size() - 2));
+                sol.buy_ticket(uid, u, id, f, t, d, num, a['q'] == "true");
             }
             if(buf == "query_order"){
-
+                reader();
+                user_name u(a['u']);
+                sol.query_order(u);
+                
             }
             if(buf == "refund_ticket"){
-
+                reader();
+                user_name u(a['u']);
+                int n = str_int(a['n']);
+                sol.refund_ticket(u, n);
+            }
+            if(buf == "clean"){
+                sol.clean();
             }
         }
         catch(...){

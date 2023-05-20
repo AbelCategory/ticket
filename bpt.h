@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <cassert>
 #include "hash_table.h"
 
 using u32 = unsigned;
@@ -19,17 +20,18 @@ struct str{
     str(){memset(s, 0, N + 1);}
     str(const char *t){memcpy(s, t, N); s[N] = 0;}
     str(const std::string &t){memset(s, 0, sizeof(s)); memcpy(s, t.data(), t.size());}
-    str(const dat& b){
+    str(const str& b){
         memcpy(s, b.s, N);
     }
-    str& operator =(const dat &b){
-        if(&b == this) return;
-        memcpy(s, t, N);
+    str& operator =(const str &b){
+        if(&b == this) return *this;
+        memcpy(s, b.s, N);
+        return *this;
     }
-    bool operator ==(const str &b) const{return memcmp(s, b.s) == 0;}
-    bool operator !=(const str &b) const{return memcmp(s, b.s) != 0;}
-    bool operator <(const str &b) const{return memcmp(s, b.s) < 0;}
-    bool operator <=(const str &b) const{return mecmcpy(s, b.s) <= 0;}
+    bool operator ==(const str &b) const{return memcmp(s, b.s, N) == 0;}
+    bool operator !=(const str &b) const{return memcmp(s, b.s, N) != 0;}
+    bool operator <(const str &b) const{return memcmp(s, b.s, N) < 0;}
+    bool operator <=(const str &b) const{return mecmcpy(s, b.s, N) <= 0;}
 
     u32 hash() const{
         u64 res = 0;
@@ -79,6 +81,7 @@ const int _M = 500;
 template<class T, class _val, int _N>
 class bpt{
 private:
+    friend class ticketsystem;
     int rt, cnt, s[100], t[100], tot;
     struct Node{
         int ch[_N + 1], sz; T a[_N];
@@ -102,10 +105,10 @@ private:
         }
     };
 
-    filesystem A;
+    filesystem A, D;
     struct cache{
         Node ca[_M]; int nxt[_M], pre[_M], hed, id[_M], ti;
-        hash_map C<10007>; int sz; bool vis[_M];
+        hash_map<10007> C; int sz; bool vis[_M];
         filesystem B;
         cache(const char *s):B(s){
             sz = hed = 0; ti = -1;
@@ -198,11 +201,15 @@ public:
         A.write<int>(0, &rt); A.write<int>(4, &cnt);
     }
 
-    inline bool empty(){return bpt.rt == 0;}
+    inline bool empty(){return rt == 0;}
 
     _val __get_val(int pos){
         _val res; D.read(pos * sizeof(_val), &res);
         return res;
+    }
+
+    void __mod_val(int pos, const _val& res){
+        D.write(pos * sizeof(_val), &res);
     }
 
     void clear(){
@@ -231,19 +238,19 @@ public:
         bool operator ==(iterator b){return cur == b.cur && id == b.id && now == b.now;}
         bool operator !=(iterator b){return cur != b.cur || id != b.id || now != b.now;}
 
-        inline T key() const{return now->C.get_id(cur).a[id];}
+        inline T key() const{return now -> C.get_id(cur).a[id];}
 
-        inline int pos() const{return now->C.get_id(cur).ch[id + 1];}
+        inline int pos() const{return now -> C.get_id(cur).ch[id + 1];}
 
         _val dat(){
-            int pos = now->C.get_id(cur).ch[id + 1];
-            _val res; D.read(pos * sizeof(_val), &res);
+            int pos = now -> C.get_id(cur).ch[id + 1];
+            _val res; now -> D.read(pos * sizeof(_val), &res);
             return res;
         }
 
         void mod(const _val &dat){
-            int pos = now->C.get_id(cur).ch[id + 1];
-            D.write(pos * sizeof(_val), &dat);
+            int pos = now -> C.get_id(cur).ch[id + 1];
+            now -> D.write(pos * sizeof(_val), &dat);
         }
     };
 
@@ -382,7 +389,8 @@ public:
     }
 
     void insert(const T &x, const _val &v){
-        ++tot; D.write<_val>(tot * sizeof(_val), v);
+        //++tot; D.write<_val>(tot * sizeof(_val), &v);
+        __mod_val(++tot, v);
         if(rt == 0){
             ++cnt; Node ncur;
             ncur.a[0] = x; ncur.sz = 1;
@@ -435,7 +443,7 @@ public:
             cur = val.ch[i];
         }
     }
-    void erase(T &x){
+    void erase(const T &x){
         if(rt == 0) return;
         int cur = rt, dep = 0;
         while(1){
