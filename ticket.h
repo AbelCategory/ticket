@@ -36,11 +36,11 @@ struct transfer{
 struct order{
     train_id id; int pos;
     station s, t;
-    DaTi lea, arr;
+    DaTi lea, arr; int tr_d;
     int statue, tic_num, cost, l, r;
     order(){statue = 0; pos = 0; l = r = 0;}
-    order(const train_id& tr, const station& S, const station &T, const DaTi &_l, const DaTi &_r, int tic, int co, int L, int R):id(tr), 
-    s(S), t(T),lea(_l), arr(_r), statue(0), tic_num(tic), cost(co), pos(0), l(L), r(R){}
+    order(const train_id& tr, const station& S, const station &T, const DaTi &_l, const DaTi &_r, int tic, int co, int L, int R, int _d):id(tr), 
+    s(S), t(T),lea(_l), arr(_r), statue(0), tic_num(tic), cost(co), pos(0), l(L), r(R), tr_d(_d){}
 };
 
 const char* order_str[3] = {"[refunded]", "[pending]", "[success]"};
@@ -53,7 +53,7 @@ struct wait{
     wait(const wait &w):pos(w.pos), l(w.l), r(w.r), tic(w.tic){}
 };
 
-using wait_id = sjtu::pair<train_id, int>;
+using wait_id = sjtu::pair<train_ti, int>;
 
 struct user_tim{
     user_name usr;
@@ -93,6 +93,7 @@ struct ticketsystem : public user_system, public train_system{
             int zz = d.get_id() - fir_arr.d.get_id();
             DaTi st_time(Day(e.sal1) + zz, e.st_tim), en_time = st_time;
             st_time += e.lea_time[l]; en_time += e.arr_time[r];
+            // auto __it = tic.find(train_ti(tra, e.sal1 + zz));
             seat_info g = tic.find(train_ti(tra, e.sal1 + zz)).dat();
             res.push_back(ticket(tra, s, t, e.cost[r] - e.cost[l], g.qmin(l, r), st_time, en_time, e.arr_time[r] - e.lea_time[l]));
         }
@@ -194,18 +195,19 @@ struct ticketsystem : public user_system, public train_system{
         int D = d.get_id() - t1.d.get_id();
         DaTi L = t1, R = t1; L.d += D; R.d += D;
         R += tf.arr_time[r] - tf.lea_time[l];
-        auto tr_it = tic.find(train_ti(id, tf.sal1 + D));
+        int __d = tf.sal1 + D;
+        auto tr_it = tic.find(train_ti(id, __d));
         seat_info sat = tr_it.dat();
         // DaTi L(d, tf.st_tim), R(L);
         // L += tf.lea_time[l]; R += tf.arr_time[r];
-        order now(id, s, t, L, R, num, tf.cost[r] - tf.cost[l], l, r); now.pos = tr_it.pos();
+        order now(id, s, t, L, R, num, tf.cost[r] - tf.cost[l], l, r, __d); now.pos = tr_it.pos();
         int nu = sat.qmin(l, r);
         if(nu < num){
             if(!q || q && num > tf.seat_num) throw "lack of ticket";
             else{
                 now.statue = 1;
                 ord.insert(user_tim(u, uid), now);
-                wait_list.insert(wait_id(id, uid), wait(ord.tot, l, r, nu));
+                wait_list.insert(wait_id(train_ti(id, __d), uid), wait(ord.tot, l, r, nu));
                 cout << "queue\n";
             }
         }
@@ -217,6 +219,11 @@ struct ticketsystem : public user_system, public train_system{
             cout << 1ll * (tf.cost[r] - tf.cost[l]) * num << '\n';
             ord.insert(user_tim(u, uid), now);
         }
+        // if(tf.sal1+D==203 && id.s[0] == 'L' && id.s[1] == 'e'){
+        //     std::cout << "$$";
+        //     for(int i = 0; i < 6; ++i)
+        //         std::cout << sat.seat[i] << "$";
+        // }
     }
 
     void query_order(user_name u){
@@ -240,21 +247,23 @@ struct ticketsystem : public user_system, public train_system{
         u32 id = u.hash();
         if(log.find(id) == log.end()) throw "not loggin";
         auto it = ord.lower_bound(user_tim(u, 2147483647));
-        for(int i = 1; i < n; ++i) ++it;
+        for(int i = 1; i < n; ++i)
+            ++it;
         if(it == ord.end() || it.key().usr != u) throw "not enough order";
         order o = it.dat();
+        train_ti oo(o.id, o.tr_d);
         if(o.statue == 0) throw "already refunded";
         if(o.statue == 1){
             o.statue = 0; it.mod(o);
-            wait_list.erase(wait_id(o.id, it.key().tim));
+            wait_list.erase(wait_id(oo, it.key().tim));
         }
         else{
             o.statue = 0; it.mod(o);
             auto sat = tic.__get_val(o.pos);
             sat.add(o.l, o.r, -o.tic_num);
-            auto cur = wait_list.lower_bound(wait_id(o.id, 0));
+            auto cur = wait_list.lower_bound(wait_id(oo, 0));
             sjtu::vector<wait_id> to_erase;
-            for(; cur != wait_list.end() && cur.key().first == o.id; ++cur){
+            for(; cur != wait_list.end() && cur.key().first == oo; ++cur){
                 wait w = cur.dat();
                 if(sat.qmin(w.l, w.r) >= w.tic){
                     sat.add(w.l, w.r, w.tic);
@@ -267,6 +276,11 @@ struct ticketsystem : public user_system, public train_system{
             tic.__mod_val(o.pos, sat);
             for(auto it = to_erase.begin(); it != to_erase.end(); ++it)
                 wait_list.erase(*it);
+            // if(o.pos == 35){
+            //     std::cout << "@@";
+            //     for(int i = 0; i < 6; ++i)
+            //         std::cout << sat.seat[i] << "@";
+            // }
         }
     }
 
