@@ -19,7 +19,7 @@ int str_int(const std::string& s){
 }
 
 int main(){
-    // freopen("3.in","r",stdin);
+    // freopen("1.in","r",stdin);
     std::ios::sync_with_stdio(false);
     cin >> tim_cur;
     while(cin >> buf){
@@ -74,7 +74,7 @@ int main(){
                 user_name c(a['c']), u(a['u']);
                 int g = -1;
                 if(a['g'].size()) g = str_int(a['g']);
-                auto it = sol.get_profile(c, u);
+                auto it = sol.get_profile(c, u, g);
                 user_info w = it.dat();
                 if(g != -1) w.pr = g;
                 if(a['n'].size()) w.name = str<20>(a['n']);
