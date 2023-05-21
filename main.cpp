@@ -19,6 +19,7 @@ int str_int(const std::string& s){
 }
 
 int main(){
+    // freopen("3.in","r",stdin);
     std::ios::sync_with_stdio(false);
     cin >> tim_cur;
     while(cin >> buf){
@@ -33,9 +34,9 @@ int main(){
             }
         };
         cout << tim_cur << " ";
-        if(tim_cur == "[15420]"){
-            std::cerr << "????" << std::endl;
-        }
+        // if(tim_cur == "[111884]"){
+        //     std::cerr << "????" << std::endl;
+        // }
         if(buf == "exit"){
             cout << "bye" << '\n';
             return 0;

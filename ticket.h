@@ -140,6 +140,7 @@ struct ticketsystem : public user_system, public train_system{
             seat_info s1 = tic.find(train_ti(tr1, tr_in.sal1 + D1)).dat();
             for(; j != sta.end() && j.key().first == t; ++j){
                 train_id tr2 = j.key().second;
+                if(tr1 == tr2) continue;
                 sta_info st1 = j.dat();
                 train_info tr_out = tr.__get_val(st1.second);
                 int R = st1.first;
@@ -156,7 +157,7 @@ struct ticketsystem : public user_system, public train_system{
                     int ptime = tr_out.sal1;
                     if(!(fi_T < le1)){
                         int D2 = fi_T.d.get_id() - le1.d.get_id();
-                        se_S += D2; ptime += D2;
+                        se_S.d += D2; ptime += D2;
                         if(se_S < fi_T) se_S.d += 1, ptime++;
                     }
                     DaTi se_T = se_S;
