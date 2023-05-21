@@ -203,14 +203,16 @@ struct ticketsystem : public user_system, public train_system{
         if(nu < num){
             if(!q || q && num > tf.seat_num) throw "lack of ticket";
             else{
+                now.statue = 1;
                 ord.insert(user_tim(u, uid), now);
                 wait_list.insert(wait_id(id, uid), wait(ord.tot, l, r, nu));
                 cout << "queue\n";
-                now.statue = 1;
             }
         }
         else{
+            // if(tf.sal1 + D == 191) std::cout << " ###" << sat.seat[4];
             sat.add(l, r, num);
+            // if(tf.sal1 + D == 191) std::cout << " ???" << sat.seat[4] << "!!!" << " ";
             tr_it.mod(sat); now.statue = 2;
             cout << 1ll * (tf.cost[r] - tf.cost[l]) * num << '\n';
             ord.insert(user_tim(u, uid), now);
@@ -262,6 +264,7 @@ struct ticketsystem : public user_system, public train_system{
                     to_erase.push_back(cur.key()); 
                 }
             }
+            tic.__mod_val(o.pos, sat);
             for(auto it = to_erase.begin(); it != to_erase.end(); ++it)
                 wait_list.erase(*it);
         }

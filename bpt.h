@@ -192,12 +192,16 @@ public:
             A.read<int>(0, &rt);
             A.read<int>(4, &cnt);
             A.read<int>(8, &tot);
+            std::cerr << "rad:" << tot << std::endl;
         }
     }
 
     ~bpt(){
         // fprintf(stderr,"ok????");
-        A.write<int>(0, &rt); A.write<int>(4, &cnt);
+        A.write<int>(0, &rt);
+        A.write<int>(4, &cnt);
+        A.write<int>(8, &tot);
+        std::cerr << _N << ": " << tot << std::endl;
     }
 
     inline bool empty(){return rt == 0;}
