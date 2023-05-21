@@ -19,7 +19,6 @@ int str_int(const std::string& s){
 }
 
 int main(){
-    freopen("2.in", "r", stdin);
     std::ios::sync_with_stdio(false);
     cin >> tim_cur;
     while(cin >> buf){
