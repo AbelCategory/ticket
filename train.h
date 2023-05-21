@@ -181,7 +181,7 @@ struct train_system{
         seat_info sat;
         if(cur.is_re){
             auto j = tic.find(train_ti(i, d.get_id()));
-            sat = seat_info(cur.sta_num, cur.seat_num);
+            sat = j.dat();
         }
         else sat = seat_info(cur.sta_num, cur.seat_num);
         for(int i = 0; i < cur.sta_num; ++i){

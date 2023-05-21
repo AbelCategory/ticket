@@ -21,11 +21,11 @@ struct str{
     str(const char *t){memcpy(s, t, N); s[N] = 0;}
     str(const std::string &t){memset(s, 0, sizeof(s)); memcpy(s, t.data(), t.size());}
     str(const str& b){
-        memcpy(s, b.s, N);
+        memcpy(s, b.s, N); s[N] = 0;
     }
     str& operator =(const str &b){
         if(&b == this) return *this;
-        memcpy(s, b.s, N);
+        memcpy(s, b.s, N); s[N] = 0;
         return *this;
     }
     bool operator ==(const str &b) const{return memcmp(s, b.s, N) == 0;}

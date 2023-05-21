@@ -136,7 +136,7 @@ struct ticketsystem : public user_system, public train_system{
             ar1 += tr_in.lea_time[l]; ar2 += tr_in.lea_time[l];
             if(d < ar1.d || ar2.d < d) continue;
             int D1 = d.get_id() - ar1.d.get_id();
-            DaTi fi_S(d, ar1.t); fi_S += tr_in.lea_time[l];
+            DaTi fi_S(d, ar1.t);
             seat_info s1 = tic.find(train_ti(tr1, tr_in.sal1 + D1)).dat();
             for(; j != sta.end() && j.key().first == t; ++j){
                 train_id tr2 = j.key().second;
@@ -160,12 +160,12 @@ struct ticketsystem : public user_system, public train_system{
                         if(se_S < fi_T) se_S.d += 1, ptime++;
                     }
                     DaTi se_T = se_S;
-                    se_S += tr_out.lea_time[L]; se_T += tr_out.arr_time[R];
+                    se_T += tr_out.arr_time[R] - tr_out.lea_time[L];
                     seat_info s2 = tic.find(train_ti(tr2, ptime)).dat();
                     ticket A(tr1, s, cur, tr_in.cost[r] - tr_in.cost[l], s1.qmin(l, r), fi_S, fi_T, tr_in.arr_time[r] - tr_in.lea_time[l]);
                     ticket B(tr2, cur, t, tr_out.cost[R] - tr_out.cost[L], s2.qmin(L, R), se_S, se_T, tr_out.arr_time[R] - tr_out.lea_time[L]);
                     transfer now(A, B, (se_T.d.get_id() - fi_S.d.get_id()) * 1440 + (se_T.t.get_id() - fi_S.t.get_id()));
-                    if(!ok) ans = now;
+                    if(!ok) ans = now, ok = 1;
                     else if(cmp(now, ans)) ans = now;
                 }
             }
@@ -178,6 +178,8 @@ struct ticketsystem : public user_system, public train_system{
     }
 
     void buy_ticket(int uid, const user_name& u, const train_id& id, const station& s, const station &t, const Day& d, int num, bool q){
+        int us_id = u.hash();
+        if(log.find(us_id) == log.end()) throw "user not loggin";
         auto it = tr.find(id);
         if(it == tr.end()) throw "no train";
         // auto tr_it = tic.find(train_ti(id, d.get_id()));
@@ -207,7 +209,7 @@ struct ticketsystem : public user_system, public train_system{
             else{
                 now.statue = 1;
                 ord.insert(user_tim(u, uid), now);
-                wait_list.insert(wait_id(train_ti(id, __d), uid), wait(ord.tot, l, r, nu));
+                wait_list.insert(wait_id(train_ti(id, __d), uid), wait(ord.tot, l, r, num));
                 cout << "queue\n";
             }
         }
